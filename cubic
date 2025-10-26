@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Khayyām — Conic Solutions of Cubics (authentic loci + volumes)</title>
+
+<!-- Typography & baseline -->
+<style>
+  :root{
+    --ink:#2f2a25; --coffee:#7a4b20; --paper:#f7f4ef; --line:#e6dfd6;
+    --blue:#1f73d3; --blue2:#4a90e2; --red:#cc3b32; --red2:#e9593b; --brown:#7a4b20;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 Georgia, "Times New Roman", serif}
+  h1{margin:18px 16px 8px;font-size:28px;color:var(--coffee)}
+  .sub{margin:0 16px 18px;color:#5a524b}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:1200px;margin:0 auto 28px;padding:0 12px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+  .card h2{margin:0;padding:12px 16px;border-bottom:1px solid #eee;color:var(--coffee);font-size:18px}
+  .content{padding:12px 16px}
+  .hint{font-style:italic;color:#5d5851;margin:2px 0 12px}
+  .row{display:grid;grid-template-columns:28px 1fr 64px;gap:10px;align-items:center;margin:8px 0}
+  .row label{color:var(--coffee);font-weight:bold}
+  input[type=range]{width:100%}
+  .controls{display:grid;gap:6px}
+  .toggles{display:flex;gap:8px;margin-top:10px}
+  .btn{appearance:none;border:1px solid var(--coffee);background:var(--coffee);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer}
+  .btn.alt{background:#fff;color:var(--coffee)}
+  .eq-title{font-weight:bold;text-align:center;margin-top:6px}
+  canvas{width:100%;height:440px;display:block}
+  .credit{max-width:1200px;margin:12px auto 32px;padding:0 16px;color:#4a433c}
+  .credit a{color:var(--coffee);text-decoration:underline}
+  .mini{font-size:13px;color:#6b625a}
+  .badge{display:inline-block;background:#f1ede7;border:1px solid var(--line);border-radius:6px;padding:4px 8px;margin-left:6px;color:#6b5b51}
+  .mathnote{background:#fbf9f6;border-left:3px solid var(--coffee);padding:10px 12px;border-radius:8px;margin:8px 0}
+  .dev{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;color:#555;margin-top:8px}
+</style>
+</head>
+<body>
+
+<h1>Khayyām — Conic Solutions of Cubics <span class="badge">authentic loci + volumes</span></h1>
+<p class="sub">
+  Intersection of a parabola \( \mathcal{P}:\ z=\dfrac{x^2}{\kappa} \) and a (semi)circle \( \mathcal{C} \) gives the solution \(x\).
+  Volumes are compared on the **same base** \(x\times\kappa\).
+</p>
+
+<div class="grid">
+  <!-- Loci panel -->
+  <div class="card">
+    <h2>Loci (\(\mathcal{P}\) parabola, \(\mathcal{C}\) semicircle)</h2>
+    <div class="content">
+      <div class="hint" id="loci-hint">
+        Fix breadth \(\kappa\). Blue \(\mathcal{P}\): \(z=\dfrac{x^2}{\kappa}\).
+        Red \(\mathcal{C}\) encodes the mean-proportion relation for the chosen type. Move the point by the **Arc position \(\varphi\)** slider.
+      </div>
+
+      <div class="controls">
+        <div class="row">
+          <label>Type</label>
+          <select id="type">
+            <option value="II">II — \(x^3=Ax+N\)</option>
+            <option value="I">I — \(x^3+N=Ax\)</option>
+            <option value="III">III — \(x^3+Sx^2=N\)</option>
+            <option value="IV">IV — \(x^3+N=Sx^2\)</option>
+            <option value="V">V — \(x^3=Sx^2+N\)</option>
+            <option value="VI">VI — \(x^3+Sx^2+Bx=N\)</option>
+            <option value="VII">VII — \(x^3+Sx^2+N=Bx\)</option>
+            <option value="VIII">VIII — \(x^3+Bx+N=Sx^2\)</option>
+            <option value="X">X — \(x^3=Sx^2+Bx+N\)</option>
+            <option value="XII">XII — \(x^3+Bx=Sx^2+N\)</option>
+          </select>
+          <span></span>
+        </div>
+
+        <div class="row">
+          <label>A</label>
+          <input id="A" type="range" min="2" max="16" step="0.5" value="6" />
+          <span id="A_val">6.0</span>
+        </div>
+        <div class="row">
+          <label>S</label>
+          <input id="S" type="range" min="2" max="16" step="0.5" value="6" />
+          <span id="S_val">6.0</span>
+        </div>
+        <div class="row">
+          <label>B</label>
+          <input id="B" type="range" min="1" max="16" step="0.5" value="5" />
+          <span id="B_val">5.0</span>
+        </div>
+        <div class="row">
+          <label>N</label>
+          <input id="N" type="range" min="3" max="60" step="1" value="27" />
+          <span id="N_val">27</span>
+        </div>
+
+        <div class="row">
+          <label>\(\varphi\)</label>
+          <input id="phi" type="range" min="0.05" max="3.09" step="0.001" value="1.0" />
+          <span id="phi_val">1.000</span>
+        </div>
+
+        <div class="toggles">
+          <button id="snap" class="btn">Go to intersection</button>
+          <button id="focusP" class="btn alt">Show \(\mathcal{P}\) only</button>
+          <button id="focusC" class="btn alt">Show \(\mathcal{C}\) only</button>
+          <button id="focusBoth" class="btn alt">Show both</button>
+        </div>
+      </div>
+
+      <div class="mathnote" id="micro"></div>
+      <canvas id="loci"></canvas>
+      <div class="dev" id="dev1"></div>
+    </div>
+  </div>
+
+  <!-- Volumes panel -->
+  <div class="card">
+    <h2>Equal volumes (common base \(x\times \kappa\))</h2>
+    <div class="content">
+      <div class="hint">
+        The cube block uses its **true** height \(z_{\mathcal{P}}=\dfrac{x^2}{\kappa}\).
+        Every other term’s block has height \( \text{(term volume)} \big/ (x\kappa)\).
+        Equality requires **both**: \(z_{\mathcal{P}}=z_{\mathcal{C}}\) and total left/right heights match.
+      </div>
+      <div class="eq-title" id="eq-title"></div>
+      <canvas id="stacks"></canvas>
+      <div class="dev" id="dev2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Credits / attribution -->
+<div class="credit">
+  <p>
+    Historical note &amp; credit:
+    This interactive reconstruction was informed by the Persian translation and commentary by
+    <a href="https://en.wikipedia.org/wiki/Gholamhossein_Mosahab" target="_blank" rel="noopener">Gholamhossein Mosahab</a>
+    — <span lang="fa">«حکیم عُمَر خیّام به عنوان عالِمِ جبر»</span>.
+  </p>
+  <p class="mini">
+    Built for the <strong>mathswell.com</strong> collection. All mathematics on this page is rendered with MathJax.
+  </p>
+</div>
+
+<!-- MathJax -->
+<script>
+  window.MathJax = { tex: { inlineMath: [['\\(','\\)'],['$','$']] }, svg: { fontCache: 'global' } };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.min.js" defer></script>
+
+<!-- App logic -->
+<script>
+/* =========================
+   Shared math + state
+   ========================= */
+const Ctx = {
+  loci: document.getElementById('loci').getContext('2d'),
+  stacks: document.getElementById('stacks').getContext('2d')
+};
+const Can = {
+  loci: document.getElementById('loci'),
+  stacks: document.getElementById('stacks')
+};
+
+const U = 28; // pixels per unit
+let focusMode = 'both'; // 'P' | 'C' | 'both'
+
+const sliders = {
+  type: document.getElementById('type'),
+  A: document.getElementById('A'),
+  S: document.getElementById('S'),
+  B: document.getElementById('B'),
+  N: document.getElementById('N'),
+  phi: document.getElementById('phi')
+};
+const labels = {
+  A: document.getElementById('A_val'),
+  S: document.getElementById('S_val'),
+  B: document.getElementById('B_val'),
+  N: document.getElementById('N_val'),
+  phi: document.getElementById('phi_val')
+};
+
+const eqTitle = document.getElementById('eq-title');
+const micro = document.getElementById('micro');
+const dev1 = document.getElementById('dev1');
+const dev2 = document.getElementById('dev2');
+
+let state = {
+  type: sliders.type.value,
+  A: +sliders.A.value, S: +sliders.S.value, B: +sliders.B.value, N: +sliders.N.value,
+  phi: +sliders.phi.value
+};
+
+// utility: resize canvases to CSS size
+function resize(c, ctx){ const r=c.getBoundingClientRect(); c.width=r.width; c.height=r.height; }
+
+/* =========================
+   Loci definitions
+   ========================= */
+
+// Base breadth κ (kappa) and lemma height h = N/κ depend on type
+function baseFor(type, mags){
+  if(type==='I'||type==='II'){ return mags.A; } // κ = A
+  return mags.S; // κ = S otherwise
+}
+
+function params(m){ // m: magnitudes
+  const kappa = baseFor(state.type, m);
+  const h = m.N / kappa;           // lemma height (diameter)
+  return { ...m, kappa, h };
+}
+
+// Parabola: z = x^2 / κ
+const P = x => x*x; // raw x^2
+function zParabola(x, p){ return P(x)/p.kappa; }
+
+// Circle placement (semicircle) per family.
+// We use a unified table that matches the classical shifts:
+//   - I, II: center at (h/2, 0)
+//   - For Sx^2 on the left/right: vertical center ±h/2
+//   - Linear Bx contributes a horizontal shift ± B/(2S)
+function circleDef(type, p){
+  const y2 = p.h/2, bx = (p.B && p.S)? (p.B/(2*p.S)) : 0;
+  switch(type){
+    case 'I': case 'II': return { cx: y2, cz: 0,   R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+    case 'III':          return { cx: 0,   cz: +y2, R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+    case 'IV':           return { cx: 0,   cz: -y2, R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+    case 'V':            return { cx: 0,   cz: -y2, R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+    case 'VI':           return { cx: +bx, cz: +y2, R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+    case 'VII':          return { cx: -bx, cz: +y2, R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+    case 'VIII':         return { cx: +bx, cz: -y2, R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+    case 'X':            return { cx: +bx, cz: +y2, R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+    case 'XII':          return { cx: -bx, cz: +y2, R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+    default:             return { cx: y2, cz: 0,   R: y2, thetaMin:0.05, thetaMax:Math.PI-0.05 };
+  }
+}
+function circlePoint(phi, def){ // angle parameter along the semicircle
+  return { x: def.cx + def.R*Math.cos(phi), z: def.cz + def.R*Math.sin(phi) };
+}
+
+/* =========================
+   Volume stacks (common base x×κ)
+   ========================= */
+
+const PROBLEMS = {
+  I:   { base:'A', left:['x^3','N'],           right:['Ax']             },
+  II:  { base:'A', left:['x^3'],               right:['Ax','N']         },
+  III: { base:'S', left:['x^3','Sx^2'],        right:['N']              },
+  IV:  { base:'S', left:['x^3','N'],           right:['Sx^2']           },
+  V:   { base:'S', left:['x^3'],               right:['Sx^2','N']       },
+  VI:  { base:'S', left:['x^3','Sx^2','Bx'],   right:['N']              },
+  VII: { base:'S', left:['x^3','Sx^2','N'],    right:['Bx']             },
+  VIII:{ base:'S', left:['x^3','Bx','N'],      right:['Sx^2']           },
+  X:   { base:'S', left:['x^3'],               right:['Sx^2','Bx','N']  },
+  XII: { base:'S', left:['x^3','Bx'],          right:['Sx^2','N']       }
+};
+
+// height of an individual term given x and κ (block height = volume / (xκ))
+function termHeight(term, x, p){
+  switch(term){
+    case 'x^3': return zParabola(x, p); // = x^2/κ
+    case 'Ax':  return p.A / p.kappa;
+    case 'Sx^2':return (p.S * x*x) / (x * p.kappa); // simplifies to (S/κ)*x ; but for κ=S this is x
+    case 'Bx':  return p.B / p.kappa;               // constant; for κ=S → B/S
+    case 'N':   return (p.N / p.kappa) / x;         // = y/x
+    default:    return 0;
+  }
+}
+function totalHeight(list, x, p){ return list.map(t=>termHeight(t,x,p)).reduce((a,b)=>a+b,0); }
+
+/* =========================
+   Drawing
+   ========================= */
+
+function drawLoci(){
+  resize(Can.loci, Ctx.loci);
+  const ctx = Ctx.loci, W = Can.loci.width, H = Can.loci.height;
+  ctx.clearRect(0,0,W,H);
+  const p  = params(state);
+  const def = circleDef(state.type, p);
+  const baseY = H*0.78, OX = W*0.18;
+
+  // axes
+  ctx.strokeStyle = '#999'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(OX-16, baseY); ctx.lineTo(W-20, baseY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(OX, baseY+16); ctx.lineTo(OX, 24); ctx.stroke();
+
+  // parabola
+  if(focusMode!=='C'){
+    ctx.strokeStyle = 'rgba(31,115,211,.9)'; ctx.lineWidth = 3; ctx.beginPath();
+    let first=true;
+    for(let x=0; x<=12; x+=0.05){
+      const px = OX + x*U, py = baseY - zParabola(x,p)*U;
+      if(first){ ctx.moveTo(px,py); first=false } else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+  }
+
+  // semicircle (draw half-arc visible in our coordinate frame)
+  if(focusMode!=='P'){
+    ctx.strokeStyle = 'rgba(204,59,50,.9)'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(OX+def.cx*U, baseY-def.cz*U, def.R*U, Math.PI, 0, false);
+    ctx.stroke();
+  }
+
+  // moving point + residual
+  const C = circlePoint(state.phi, def);
+  const x = Math.max(C.x, 0.0001);
+  const zP = zParabola(x, p);
+  const px = OX + x*U, pyC = baseY - C.z*U, pyP = baseY - zP*U;
+
+  // residual between z_C and z_P
+  ctx.setLineDash([5,5]); ctx.strokeStyle = '#7a4b20';
+  ctx.beginPath(); ctx.moveTo(px, pyC); ctx.lineTo(px, pyP); ctx.stroke(); ctx.setLineDash([]);
+
+  dot(ctx, px, pyC, '#cc3b32'); // on circle
+  dot(ctx, px, pyP, '#1f73d3'); // on parabola
+
+  // micro explainer
+  micro.innerHTML = microCopy(state.type, p);
+  MathJax.typesetPromise([micro]);
+}
+
+function drawStacks(){
+  resize(Can.stacks, Ctx.stacks);
+  const ctx = Ctx.stacks, W = Can.stacks.width, H = Can.stacks.height;
+  ctx.clearRect(0,0,W,H);
+  const p  = params(state);
+  const def = circleDef(state.type, p);
+  const baseY = H*0.82;
+  const leftX = W/2 - 130, rightX = W/2 + 30, BW = 110;
+
+  // ground
+  ctx.strokeStyle = '#666'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(40, baseY); ctx.lineTo(W-40, baseY); ctx.stroke();
+
+  // current x from the circle point (single driver)
+  const C = circlePoint(state.phi, def);
+  const x = Math.max(C.x, 0.0001);
+  const zP = zParabola(x, p);               // cube height
+  const zC = C.z;                            // circle height
+
+  const spec = PROBLEMS[state.type];
+
+  // left stack
+  let yTop = baseY;
+  spec.left.forEach(term=>{
+    const h = termHeight(term, x, p);
+    yTop = block(ctx, leftX, yTop - h*U, BW, h*U, term==='x^3' ? '#4a90e2' : 'rgba(74,144,226,.75)', term);
+  });
+
+  // right stack
+  let yTopR = baseY;
+  spec.right.forEach(term=>{
+    const h = termHeight(term, x, p);
+    yTopR = block(ctx, rightX, yTopR - h*U, BW, h*U, '#e9593b', term);
+  });
+
+  // guide lines: blue = z_P (cube); red = z_C (circle implied)
+  ctx.setLineDash([4,4]);
+  ctx.strokeStyle = '#4a90e2';
+  ctx.beginPath(); ctx.moveTo(leftX, baseY - zP*U); ctx.lineTo(leftX+BW, baseY - zP*U); ctx.stroke();
+
+  const totalR = totalHeight(spec.right, x, p);
+  ctx.strokeStyle = '#e9593b';
+  ctx.beginPath(); ctx.moveTo(rightX, baseY - totalR*U); ctx.lineTo(rightX+BW, baseY - totalR*U); ctx.stroke();
+
+  // thin marker for z_C (from circle) to make dual condition visible
+  ctx.setLineDash([]); ctx.strokeStyle = '#7a4b20';
+  ctx.beginPath(); ctx.moveTo(rightX-14, baseY - zC*U); ctx.lineTo(rightX+BW+14, baseY - zC*U); ctx.stroke();
+
+  // titles & dev readout
+  eqTitle.innerHTML = eqLine(state.type);
+  MathJax.typesetPromise([eqTitle]);
+
+  dev1.innerHTML =
+    `κ=${p.kappa.toFixed(3)}, h=${p.h.toFixed(3)} | x=${x.toFixed(3)}<br>`+
+    `z_P=x²/κ=${zP.toFixed(3)} | z_C (circle)=${zC.toFixed(3)}`;
+
+  const totalL = totalHeight(spec.left, x, p);
+  dev2.innerHTML =
+    `ΣL=${totalL.toFixed(3)}  |  ΣR=${totalR.toFixed(3)}  |  `+
+    `Δ(z): ${(zC - zP).toFixed(3)}  Δ(sum): ${(totalL-totalR).toFixed(3)}`;
+}
+
+function block(g, x, y, w, h, color, label){
+  if(h<1) h=1;
+  g.fillStyle = color; g.fillRect(x,y,w,h);
+  g.strokeStyle = '#333'; g.lineWidth = 1; g.strokeRect(x,y,w,h);
+  if(h>20){ g.fillStyle='#fff'; g.font='12px Georgia'; g.textAlign='center'; g.textBaseline='middle';
+            g.fillText(label, x+w/2, y+h/2); }
+  return y;
+}
+function dot(g,x,y,c){ g.fillStyle=c; g.strokeStyle='#fff'; g.lineWidth=2; g.beginPath(); g.arc(x,y,7,0,2*Math.PI); g.fill(); g.stroke(); }
+
+/* =========================
+   Intersection search (dual condition)
+   ========================= */
+
+function snapToIntersection(){
+  const p  = params(state);
+  const def = circleDef(state.type, p);
+  let bestPhi = state.phi, bestScore = 1e9;
+
+  // coarse-to-fine sweep
+  for(let step of [0.004, 0.001]){
+    for(let t=def.thetaMin; t<def.thetaMax; t+=step){
+      const C = circlePoint(t, def); if(C.x<=0) continue;
+      const x = C.x, zP = zParabola(x, p), zC = C.z;
+      const Lsum = totalHeight(PROBLEMS[state.type].left,  x, p);
+      const Rsum = totalHeight(PROBLEMS[state.type].right, x, p);
+      const score = Math.abs(zC - zP) + Math.abs(Lsum - Rsum); // both conditions
+      if(score < bestScore){ bestScore = score; bestPhi = t; }
+    }
+  }
+  state.phi = bestPhi;
+  sliders.phi.value = bestPhi;
+  labels.phi.textContent = bestPhi.toFixed(3);
+  updateAll();
+}
+
+/* =========================
+   Copy helpers
+   ========================= */
+function eqLine(type){
+  switch(type){
+    case 'I':   return '\\(x^3 + N = Ax\\)';
+    case 'II':  return '\\(x^3 = Ax + N\\)';
+    case 'III': return '\\(x^3 + Sx^2 = N\\)';
+    case 'IV':  return '\\(x^3 + N = Sx^2\\)';
+    case 'V':   return '\\(x^3 = Sx^2 + N\\)';
+    case 'VI':  return '\\(x^3 + Sx^2 + Bx = N\\)';
+    case 'VII': return '\\(x^3 + Sx^2 + N = Bx\\)';
+    case 'VIII':return '\\(x^3 + Bx + N = Sx^2\\)';
+    case 'X':   return '\\(x^3 = Sx^2 + Bx + N\\)';
+    case 'XII': return '\\(x^3 + Bx = Sx^2 + N\\)';
+    default:    return '';
+  }
+}
+function microCopy(type, p){
+  const k = p.kappa;
+  const base = `Fix breadth \\(\\kappa=${(k).toFixed(3)}\\). Blue \\(\\mathcal{P}\\): \\(z=\\dfrac{x^2}{\\kappa}\\).`;
+  const lemma = ` Let \\(h=\\dfrac{N}{\\kappa}\\). The red \\(\\mathcal{C}\\) is a semicircle built on the diameter \\(h\\), with small shifts when a \\(Bx\\) term is present.`;
+  const join = ` The solution \\(x\\) is where \\(\\mathcal{P}\\) and \\(\\mathcal{C}\\) meet.`;
+  return base + lemma + join;
+}
+
+/* =========================
+   Wiring
+   ========================= */
+
+function updateAll(){
+  // reflect slider values
+  labels.A.textContent = (+sliders.A.value).toFixed(1);
+  labels.S.textContent = (+sliders.S.value).toFixed(1);
+  labels.B.textContent = (+sliders.B.value).toFixed(1);
+  labels.N.textContent = (+sliders.N.value).toFixed(0);
+  labels.phi.textContent = (+sliders.phi.value).toFixed(3);
+
+  // push to state
+  state = {
+    type: sliders.type.value,
+    A: +sliders.A.value, S: +sliders.S.value, B: +sliders.B.value, N: +sliders.N.value,
+    phi: +sliders.phi.value
+  };
+
+  // enable/disable magnitude sliders shown for the active type
+  const spec = PROBLEMS[state.type];
+  // A only needed for types I/II (κ=A). For others A still may appear in right side only via label, but κ=S.
+  sliders.A.parentElement.style.display = (state.type==='I'||state.type==='II') ? '' : '';
+  sliders.S.parentElement.style.display = (state.type==='I'||state.type==='II') ? '' : '';
+  sliders.B.parentElement.style.display = (spec.left.concat(spec.right).includes('Bx')) ? '' : '';
+
+  drawLoci();
+  drawStacks();
+}
+
+document.getElementById('focusP').onclick = ()=>{ focusMode='P';   updateAll(); };
+document.getElementById('focusC').onclick = ()=>{ focusMode='C';   updateAll(); };
+document.getElementById('focusBoth').onclick = ()=>{ focusMode='both'; updateAll(); };
+document.getElementById('snap').onclick = snapToIntersection;
+
+// listeners
+Object.values(sliders).forEach(el => el.addEventListener('input', updateAll));
+
+// initial paint
+updateAll();
+</script>
+
+</body>
+</html>
